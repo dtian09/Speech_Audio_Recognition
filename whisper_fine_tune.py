@@ -15,10 +15,14 @@ wandb.init(
         project="whisper-finetune-360", 
         entity="dtian",
         config={
+          "sampling_rate": 16000,
           "num_epochs": 3
         }
 )
-   
+
+sampling_rate = wandb.config.sampling_rate
+num_epochs = wandb.config.num_epochs
+
 # -------- Dataset Loading --------
 if isdir("librispeech"):
     librispeech = load_from_disk("librispeech")
@@ -34,11 +38,16 @@ model.config.forced_decoder_ids = None  # disable language token enforcement
 model.gradient_checkpointing_enable()  # Save memory on T4
 
 # -------- Audio Preprocessing --------
-librispeech = librispeech.cast_column("audio", Audio(sampling_rate=16000))
+
+if isdir("librispeech_preprocessed_"+str(sampling_rate)):
+    librispeech = load_from_disk("librispeech_preprocessed_"+str(sampling_rate))
+else:
+    librispeech = librispeech.cast_column("audio", Audio(sampling_rate=sampling_rate))
+    librispeech.save_to_disk("librispeech_preprocessed_"+str(sampling_rate))
 
 def prepare_example(batch):
     audio = batch["audio"]
-    inputs = processor(audio["array"], sampling_rate=16000)
+    inputs = processor(audio["array"], sampling_rate=sampling_rate)
     with processor.as_target_processor():
         labels = processor(batch["text"]).input_ids
     batch["input_features"] = inputs.input_features[0]
@@ -64,8 +73,9 @@ def compute_metrics(pred):
 
 # -------- Training Arguments --------
 # train-clean-360 has ~104,000 samples → ~6,500 steps per epoch (with effective batch size 16)
+
 steps_per_epoch = 6500
-num_epochs = 3
+
 total_steps = steps_per_epoch * num_epochs  # ~19,500
 
 training_args = Seq2SeqTrainingArguments(
@@ -82,7 +92,7 @@ training_args = Seq2SeqTrainingArguments(
     evaluation_strategy="steps",
     predict_with_generate=True,
     fp16=torch.cuda.is_available(),
-    report_to="wandb",  # ✅ Enable W&B
+    report_to="wandb",  
     logging_dir="./logs",
 )
 
@@ -102,5 +112,11 @@ trainer.train()
 # -------- Save Fine-tuned Model --------
 model.save_pretrained("whisper-finetuned-360")
 processor.save_pretrained("whisper-finetuned-360")
+
+# Log as W&B artifact
+save_dir = "whisper-finetuned-360"
+artifact = wandb.Artifact("whisper-tiny-finetuned-360", type="model")
+artifact.add_dir(save_dir)
+wandb.log_artifact(artifact)
 
 wandb.finish()
