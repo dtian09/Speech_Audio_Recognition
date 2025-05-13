@@ -8,62 +8,78 @@ import torch
 from jiwer import wer
 import wandb
 
-# -------- WANDB Setup --------
-wandb.login()  # Run this once with your API key
-
+# -----------------------------
+# WANDB Setup
+# -----------------------------
+wandb.login()
 wandb.init(
-        project="whisper-finetune-360", 
-        entity="dtian",
-        config={
-          "sampling_rate": 16000,
-          "num_epochs": 3
-        }
+    project="whisper-finetune-360",
+    entity="dtian",  # Replace with your W&B username
+    config={
+        "sampling_rate": 16000,
+        "num_epochs": 3,
+        "model_name": "openai/whisper-tiny"
+    }
 )
 
 sampling_rate = wandb.config.sampling_rate
 num_epochs = wandb.config.num_epochs
+model_name = wandb.config.model_name
 
-# -------- Dataset Loading --------
-if isdir("librispeech"):
-    librispeech = load_from_disk("librispeech")
+# -----------------------------
+# Load and Preprocess Dataset
+# -----------------------------
+if isdir("librispeech_preprocessed_" + str(sampling_rate)):
+    librispeech = load_from_disk("librispeech_preprocessed_" + str(sampling_rate))
 else:
-    librispeech = load_dataset("librispeech_asr", "clean", split="train.360")
-    librispeech.save_to_disk("librispeech")
+    # Load raw LibriSpeech
+    if isdir("librispeech"):
+        raw_dataset = load_from_disk("librispeech")
+    else:
+        raw_dataset = load_dataset("librispeech_asr", "clean", split="train.360")
+        raw_dataset.save_to_disk("librispeech")
 
-# -------- Processor and Model --------
-model_name = "openai/whisper-tiny"
-processor = WhisperProcessor.from_pretrained(model_name)
+    # Resample audio
+    raw_dataset = raw_dataset.cast_column("audio", Audio(sampling_rate=sampling_rate))
+
+    # Load processor
+    processor = WhisperProcessor.from_pretrained(model_name)
+
+    def prepare_example(batch):
+        audio = batch["audio"]
+        inputs = processor(audio["array"], sampling_rate=sampling_rate)
+        with processor.as_target_processor():
+            labels = processor(batch["text"]).input_ids
+        batch["input_features"] = inputs.input_features[0]
+        batch["labels"] = labels
+        return batch
+
+    # Map + Save preprocessed dataset
+    librispeech = raw_dataset.map(prepare_example, remove_columns=raw_dataset.column_names)
+    librispeech.save_to_disk("librispeech_preprocessed_" + str(sampling_rate))
+else:
+    # Load processor only if dataset is preprocessed
+    processor = WhisperProcessor.from_pretrained(model_name)
+
+# -----------------------------
+# Load Model
+# -----------------------------
 model = WhisperForConditionalGeneration.from_pretrained(model_name)
-model.config.forced_decoder_ids = None  # disable language token enforcement
-model.gradient_checkpointing_enable()  # Save memory on T4
+model.config.forced_decoder_ids = None
+model.gradient_checkpointing_enable()  # For memory-efficient training on T4
 
-# -------- Audio Preprocessing --------
-
-if isdir("librispeech_preprocessed_"+str(sampling_rate)):
-    librispeech = load_from_disk("librispeech_preprocessed_"+str(sampling_rate))
-else:
-    librispeech = librispeech.cast_column("audio", Audio(sampling_rate=sampling_rate))
-    librispeech.save_to_disk("librispeech_preprocessed_"+str(sampling_rate))
-
-def prepare_example(batch):
-    audio = batch["audio"]
-    inputs = processor(audio["array"], sampling_rate=sampling_rate)
-    with processor.as_target_processor():
-        labels = processor(batch["text"]).input_ids
-    batch["input_features"] = inputs.input_features[0]
-    batch["labels"] = labels
-    return batch
-
-librispeech = librispeech.map(prepare_example, remove_columns=librispeech.column_names)
-
-# -------- Data Collator --------
+# -----------------------------
+# Data Collator
+# -----------------------------
 def data_collator(batch):
     input_features = torch.stack([torch.tensor(example["input_features"]) for example in batch])
     labels = [torch.tensor(example["labels"]) for example in batch]
     labels = pad_sequence(labels, batch_first=True, padding_value=-100)
     return {"input_features": input_features, "labels": labels}
 
-# -------- Metric Computation --------
+# -----------------------------
+# WER Metric
+# -----------------------------
 def compute_metrics(pred):
     pred_ids = pred.predictions
     label_ids = pred.label_ids
@@ -71,12 +87,11 @@ def compute_metrics(pred):
     label_str = processor.batch_decode(label_ids, skip_special_tokens=True)
     return {"wer": wer(label_str, pred_str)}
 
-# -------- Training Arguments --------
-# train-clean-360 has ~104,000 samples → ~6,500 steps per epoch (with effective batch size 16)
-
-steps_per_epoch = 6500
-
-total_steps = steps_per_epoch * num_epochs  # ~19,500
+# -----------------------------
+# Training Configuration
+# -----------------------------
+steps_per_epoch = 6500  # Based on ~104k samples and effective batch size = 16
+total_steps = steps_per_epoch * num_epochs
 
 training_args = Seq2SeqTrainingArguments(
     output_dir="./whisper-finetuned-360",
@@ -92,11 +107,13 @@ training_args = Seq2SeqTrainingArguments(
     evaluation_strategy="steps",
     predict_with_generate=True,
     fp16=torch.cuda.is_available(),
-    report_to="wandb",  
+    report_to="wandb",
     logging_dir="./logs",
 )
 
-# -------- Trainer Setup --------
+# -----------------------------
+# Trainer Setup
+# -----------------------------
 trainer = Seq2SeqTrainer(
     model=model,
     args=training_args,
@@ -106,17 +123,23 @@ trainer = Seq2SeqTrainer(
     compute_metrics=compute_metrics,
 )
 
-# -------- Train --------
+# -----------------------------
+# Train Model
+# -----------------------------
 trainer.train()
 
-# -------- Save Fine-tuned Model --------
-model.save_pretrained("whisper-finetuned-360")
-processor.save_pretrained("whisper-finetuned-360")
-
-# Log as W&B artifact
+# -----------------------------
+# Save Model Locally
+# -----------------------------
 save_dir = "whisper-finetuned-360"
-artifact = wandb.Artifact("whisper-tiny-finetuned-360", type="model")
+model.save_pretrained(save_dir)
+processor.save_pretrained(save_dir)
+
+# -----------------------------
+# Log Model to W&B Artifact
+# -----------------------------
+artifact = wandb.Artifact("whisper-tiny-finetuned-360", type="model", metadata={"epochs": num_epochs})
 artifact.add_dir(save_dir)
-wandb.log_artifact(artifact)
+wandb.log_artifact(artifact, aliases=["latest", f"epoch{num_epochs}"])
 
 wandb.finish()
