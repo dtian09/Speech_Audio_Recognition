@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/content/Speech_Audio_Recognition/whisper_fine_tune.py", line 63, in <module>
+    raw_dataset = load_dataset("librispeech_asr", "clean", split="train.360")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/load.py", line 2149, in load_dataset
+    ds = builder_instance.as_dataset(split=split, verification_mode=verification_mode, in_memory=keep_in_memory)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/builder.py", line 1173, in as_dataset
+    raise NotImplementedError(f"Loading a dataset cached in a {type(self._fs).__name__} is not supported.")
+NotImplementedError: Loading a dataset cached in a LocalFileSystem is not supported.

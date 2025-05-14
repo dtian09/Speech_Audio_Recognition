@@ -1,0 +1,15 @@
+{"time":"2025-05-14T13:44:57.063899487Z","level":"INFO","msg":"stream: starting","core version":"0.19.11","symlink path":"/content/Speech_Audio_Recognition/wandb/run-20250514_134457-kqzmpq04/logs/debug-core.log"}
+{"time":"2025-05-14T13:44:57.256848116Z","level":"INFO","msg":"created new stream","id":"kqzmpq04"}
+{"time":"2025-05-14T13:44:57.256892527Z","level":"INFO","msg":"stream: started","id":"kqzmpq04"}
+{"time":"2025-05-14T13:44:57.256916996Z","level":"INFO","msg":"handler: started","stream_id":"kqzmpq04"}
+{"time":"2025-05-14T13:44:57.256991209Z","level":"INFO","msg":"writer: Do: started","stream_id":"kqzmpq04"}
+{"time":"2025-05-14T13:44:57.257090813Z","level":"INFO","msg":"sender: started","stream_id":"kqzmpq04"}
+{"time":"2025-05-14T13:44:57.455783321Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-05-14T14:05:59.885047029Z","level":"INFO","msg":"stream: closing","id":"kqzmpq04"}
+{"time":"2025-05-14T14:05:59.885173645Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-05-14T14:05:59.885818495Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-05-14T14:06:00.323566399Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-05-14T14:06:00.627953269Z","level":"INFO","msg":"handler: closed","stream_id":"kqzmpq04"}
+{"time":"2025-05-14T14:06:00.628015993Z","level":"INFO","msg":"writer: Close: closed","stream_id":"kqzmpq04"}
+{"time":"2025-05-14T14:06:00.628077749Z","level":"INFO","msg":"sender: closed","stream_id":"kqzmpq04"}
+{"time":"2025-05-14T14:06:00.628131574Z","level":"INFO","msg":"stream: closed","id":"kqzmpq04"}

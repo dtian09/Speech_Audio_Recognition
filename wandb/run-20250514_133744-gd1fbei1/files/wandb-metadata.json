@@ -1,0 +1,31 @@
+{
+  "os": "Linux-6.1.123+-x86_64-with-glibc2.35",
+  "python": "CPython 3.11.12",
+  "startedAt": "2025-05-14T13:37:44.188477Z",
+  "program": "/content/Speech_Audio_Recognition/whisper_fine_tune.py",
+  "codePath": "whisper_fine_tune.py",
+  "git": {
+    "remote": "https://github.com/dtian09/Speech_Audio_Recognition.git",
+    "commit": "d2c4813b198859ea4cb4b9809f52e61cfe61b8d1"
+  },
+  "email": "dtian09@gmail.com",
+  "root": "/content/Speech_Audio_Recognition",
+  "host": "a5da3b317e1e",
+  "executable": "/usr/bin/python3",
+  "codePathLocal": "whisper_fine_tune.py",
+  "cpu_count": 4,
+  "cpu_count_logical": 8,
+  "disk": {
+    "/": {
+      "total": "242486079488",
+      "used": "137805348864"
+    }
+  },
+  "memory": {
+    "total": "54752948224"
+  },
+  "cpu": {
+    "count": 4,
+    "countLogical": 8
+  }
+}

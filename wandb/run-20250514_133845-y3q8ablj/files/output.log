@@ -1,0 +1,62 @@
+Downloadi
+Downloading data: 100%|████████████████████████████████████████████████| 347M/347M [00:11<00:00, 30.3MB/s]
+Downloading data: 100%|██████████████████████████████████████████████| 6.39G/6.39G [03:09<00:00, 33.6MB/s]
+Downloading data:   3%|█▍                                                    | 624M/23.0G [00:21<12:44, 29.3MB/s]
+Traceback (most recent call last):                                           | 623M/23.0G [00:21<11:43, 31.9MB/s]
+  File "/content/Speech_Audio_Recognition/whisper_fine_tune.py", line 63, in <module>
+    raw_dataset = load_dataset(
+                  ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/load.py", line 2136, in load_dataset
+    builder_instance.download_and_prepare(
+  File "/usr/local/lib/python3.11/dist-packages/datasets/builder.py", line 954, in download_and_prepare
+    self._download_and_prepare(
+  File "/usr/local/lib/python3.11/dist-packages/datasets/builder.py", line 1717, in _download_and_prepare
+    super()._download_and_prepare(
+  File "/usr/local/lib/python3.11/dist-packages/datasets/builder.py", line 1027, in _download_and_prepare
+    split_generators = self._split_generators(dl_manager, **split_generators_kwargs)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.cache/huggingface/modules/datasets_modules/datasets/librispeech_asr/2712a8f82f0d20807a56faadcd08734f9bdd24c850bb118ba21ff33ebff0432f/librispeech_asr.py", line 115, in _split_generators
+    archive_path = dl_manager.download(_DL_URLS[self.config.name])
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/download/download_manager.py", line 427, in download
+    downloaded_path_or_paths = map_nested(
+                               ^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/utils/py_utils.py", line 463, in map_nested
+    mapped = [
+             ^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/utils/py_utils.py", line 464, in <listcomp>
+    _single_map_nested((function, obj, types, None, True, None))
+  File "/usr/local/lib/python3.11/dist-packages/datasets/utils/py_utils.py", line 366, in _single_map_nested
+    return function(data_struct)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/download/download_manager.py", line 453, in _download
+    return cached_path(url_or_filename, download_config=download_config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/utils/file_utils.py", line 182, in cached_path
+    output_path = get_from_cache(
+                  ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/datasets/utils/file_utils.py", line 644, in get_from_cache
+    http_get(
+  File "/usr/local/lib/python3.11/dist-packages/datasets/utils/file_utils.py", line 419, in http_get
+    for chunk in response.iter_content(chunk_size=1024):
+  File "/usr/local/lib/python3.11/dist-packages/requests/models.py", line 820, in generate
+    yield from self.raw.stream(chunk_size, decode_content=True)
+  File "/usr/local/lib/python3.11/dist-packages/urllib3/response.py", line 1066, in stream
+    data = self.read(amt=amt, decode_content=decode_content)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/urllib3/response.py", line 955, in read
+    data = self._raw_read(amt)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/urllib3/response.py", line 879, in _raw_read
+    data = self._fp_read(amt, read1=read1) if not fp_closed else b""
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/urllib3/response.py", line 862, in _fp_read
+    return self._fp.read(amt) if amt is not None else self._fp.read()
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/http/client.py", line 473, in read
+    s = self.fp.read(amt)
+        ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/socket.py", line 718, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
